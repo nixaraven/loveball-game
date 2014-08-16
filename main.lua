@@ -7,6 +7,9 @@
 love.window.setMode(320,240)
 love.window.setTitle("JuegoSinNombre")
 
+playing = true
+ballRadius = 5
+
 --funcion para construir borde
 local function newBoundary( world, x, y, l, h )
 	local bound = {}
@@ -18,10 +21,10 @@ local function newBoundary( world, x, y, l, h )
 end
 
 --funcion para construir pelota
-local function newBall(world, x, y, radius)
+local function newBall(world, x, y)
 	local ball = {}
 	ball.body = love.physics.newBody(world, x, y, "dynamic")
-	ball.shape = love.physics.newCircleShape(radius)
+	ball.shape = love.physics.newCircleShape(ballRadius)
 	ball.fixture = love.physics.newFixture(ball.body, ball.shape, 1) -- densidad 1 (mayor densidad es mayor masa)
 	ball.fixture:setRestitution(0.5) --pelota rebota
 	ball.body:setLinearDamping(0.5)
@@ -54,13 +57,13 @@ function love.load()
 
 	objects.obs = {}
 	math.randomseed(os.time())
-	for i = 0, 20, 1 do
+	for i = 0, 25, 1 do
 		local o = newObstacle( world, math.random(15, 305), math.random(15, 225))
 		table.insert(objects.obs, o)
 	end
 
 	-- crear pelota
-	objects.ball = newBall(world, 320/2, 240/2, 5)
+	objects.ball = newBall(world, 320/2, 240/2)
 
 
 end
@@ -68,13 +71,24 @@ end
 function love.update(dt)
 	world:update(dt)
 
-	--no hay roce, hacerlo de alguna manera
 
-	--eventos de teclado
-	if love.keyboard.isDown("right") then objects.ball.body:applyForce(400, 0) end
-    if love.keyboard.isDown("left") then objects.ball.body:applyForce(-400, 0) end
-    if love.keyboard.isDown("up") then objects.ball.body:applyForce(0, -400) end
-    if love.keyboard.isDown("down") then objects.ball.body:applyForce(0, 400) end
+    -- estado para determinar la direccion de la pelota
+    vx, vy = objects.ball.body:getLinearVelocity()
+    if  (vx < 0.08) and (vy < 0.08) then
+    	playing = true
+    end
+
+    if playing then
+    	if love.keyboard.isDown(" ") then
+			--eventos de teclado
+			if love.keyboard.isDown("right") then objects.ball.body:applyForce(400, 0) end
+		    if love.keyboard.isDown("left") then objects.ball.body:applyForce(-400, 0) end
+		    if love.keyboard.isDown("up") then objects.ball.body:applyForce(0, -400) end
+		    if love.keyboard.isDown("down") then objects.ball.body:applyForce(0, 400) end    		
+	    	playing = false
+    	end
+    end
+
 end
 
 function love.draw()
@@ -92,6 +106,10 @@ function love.draw()
 		love.graphics.circle("fill", obstacle.body:getX(), obstacle.body:getY(), obstacle.shape:getRadius())
 	end
 
+	if playing then
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.print("Player 1", 5, 5)
+	end
 	--pelota
 	love.graphics.setColor(193, 47, 14)
 	love.graphics.circle("fill", objects.ball.body:getX(), objects.ball.body:getY(), objects.ball.shape:getRadius())
