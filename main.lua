@@ -26,8 +26,8 @@ local function newBall(world, x, y)
 	ball.body = love.physics.newBody(world, x, y, "dynamic")
 	ball.shape = love.physics.newCircleShape(ballRadius)
 	ball.fixture = love.physics.newFixture(ball.body, ball.shape, 1) -- densidad 1 (mayor densidad es mayor masa)
-	ball.fixture:setRestitution(0.5) --pelota rebota
-	ball.body:setLinearDamping(0.5)
+	ball.fixture:setRestitution(0.9) --pelota rebota
+	ball.body:setLinearDamping(0.7)
 
 	return ball
 end
@@ -50,7 +50,7 @@ function love.load()
 
 	objects.lbound = newBoundary(world, 5, 240/2, 10, 240) --borde izquierdo
 	objects.rbound = newBoundary(world, 315, 240/2, 10, 240)	--borde derecho
-	objects.ubound = newBoundary(world, 320/2, 5, 320,10)	--borde superior
+	objects.ubound = newBoundary(world, 320/2, 10, 320,20)	--borde superior
 	objects.dbound = newBoundary(world, 320/2, 235, 320,10) --borde inferior
 
 	-- crear obstaculos (patas de las sillas)
@@ -106,9 +106,11 @@ function love.draw()
 		love.graphics.circle("fill", obstacle.body:getX(), obstacle.body:getY(), obstacle.shape:getRadius())
 	end
 
+	love.graphics.setColor(255, 255, 255)
 	if playing then
-		love.graphics.setColor(255, 255, 255)
-		love.graphics.print("Player 1", 5, 5)
+		love.graphics.print("Player 1", 10, 5)
+	elseif not playing then
+		love.graphics.print("Waiting...", 10, 5)
 	end
 	--pelota
 	love.graphics.setColor(193, 47, 14)
