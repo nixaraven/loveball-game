@@ -52,8 +52,7 @@ end
 
 --Load
 function GameState:load()
-	love.window.setMode(320,240)
-	love.window.setTitle("JuegoSinNombre")
+	love.window.setTitle("1 Player game")
 	
 	love.physics.setMeter(32)
 	world = love.physics.newWorld(0, 0, true)

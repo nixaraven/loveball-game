@@ -3,7 +3,7 @@ _slotState = { states = {} }
 function addState(class, id)
    class._enabled = false
    class._id = id
-   class:load()
+   --class:load()
    table.insert(_slotState.states, class)
    return state
 end
@@ -28,6 +28,7 @@ function enableState(id)
    for index, state in pairs (_slotState.states) do
       if state._id == id then
          state:enable()
+         state:load()
          state._enabled = true
       end
    end
@@ -53,6 +54,11 @@ function toggleState(id)
          end
       end
    end
+end
+
+function switchState(from, to)
+   disableState(from)
+   enableState(to)
 end
 
 function destroyState(id)
