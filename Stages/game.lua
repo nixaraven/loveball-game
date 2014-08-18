@@ -25,6 +25,7 @@ local function newBall(world, x, y)
 	ball.fixture = love.physics.newFixture(ball.body, ball.shape, 1) -- densidad 1 (mayor densidad es mayor masa)
 	ball.fixture:setRestitution(0.5) --pelota rebota
 	ball.body:setLinearDamping(0.5)
+	ball.score = 0
 
 	return ball
 end
@@ -52,11 +53,17 @@ end
 
 --Load
 function GameState:load()
-	love.window.setMode(320,240)
-	love.window.setTitle("JuegoSinNombre")
+	love.window.setTitle("3 Player game")
+	player_id = 1
+	playing = true
+	delay = false
+	text = "Score "
+	timer = 240
+	t = 0
 	
 	love.physics.setMeter(32)
 	world = love.physics.newWorld(0, 0, true)
+		world:setCallbacks(beginContact)
 	
 	objects = {} --objetos del juego
 
@@ -74,8 +81,18 @@ function GameState:load()
 		table.insert(objects.obs, o)
 	end
 
-	-- crear pelota
-	objects.ball = newBall(world, 320/2, 240/2)
+	-- crear pelotas
+	objects.balls = {}
+	local y = 10
+	local x = 10
+	for i = 0, 2, 1 do
+		local local_ball = newBall(world, y, x)
+		local_ball.fixture:setUserData("Ball_Player_"..i)
+		table.insert(objects.balls, local_ball)
+		x = x + 50
+		y = y + 50
+	end
+	--objects.ball = newBall(world, 320/2, 240/2)
 end
 
 --Close
@@ -93,24 +110,81 @@ end
 --Update
 function GameState:update(dt)
 	world:update(dt)
+	
+	if t > 60 then
+		t = 0
+		timer = timer - 1
+	end
+	t = t + 1
+	
+	if timer == 0 then
+		switchState("game", "menu")
+	end
+	
+	--delay
+	if delay then
+		n = n + 1
+		if n > 500 then
+			delay = false
+		end
+	end
+	
+	if not delay then
+		-- Determinar el jugador activo
+		if not playing then
+			player_id = player_id + 1
+			if player_id > 3 then
+				player_id = 1
+			end
+			playing = true
+		end
+		
+		-- estado para determinar la direccion de la pelota
+		quietas = 0
+		for i, ball in ipairs(objects.balls) do
+			vx, vy = ball.body:getLinearVelocity()
+			if  (vx < 0.01) and (vy < 0.01) then
+				quietas = quietas + 1
+			end
+		end
+		if quietas == 3 then
+			playing = true
+		end
+		
+		if playing then
+			if love.keyboard.isDown(" ") then
+				--eventos de teclado
+				for i, ball in ipairs(objects.balls) do
+					if i == player_id then
+						if love.keyboard.isDown("up") then ball.body:applyForce(0, -400) end
+						if love.keyboard.isDown("up") and love.keyboard.isDown("right") then ball.body:applyForce(400, -400) end
+						if love.keyboard.isDown("right") then ball.body:applyForce(400, 0) end
+						if love.keyboard.isDown("right") and love.keyboard.isDown("down") then ball.body:applyForce(400, 400) end
+						if love.keyboard.isDown("down") then ball.body:applyForce(0, 400) end    		
+						if love.keyboard.isDown("down") and love.keyboard.isDown("left") then ball.body:applyForce(-400, 400) end
+						if love.keyboard.isDown("left") then ball.body:applyForce(-400, 0) end
+						if love.keyboard.isDown("left") and love.keyboard.isDown("up") then ball.body:applyForce(-400, -400) end
+						playing = false
+						delay = true
+						n = 0
+					end
+				end
+			end
+		end
+	end
+end
 
-
-    -- estado para determinar la direccion de la pelota
-    vx, vy = objects.ball.body:getLinearVelocity()
-    if  (vx < 0.08) and (vy < 0.08) then
-    	playing = true
-    end
-
-    if playing then
-    	if love.keyboard.isDown(" ") then
-			--eventos de teclado
-			if love.keyboard.isDown("right") then objects.ball.body:applyForce(400, 0) end
-		    if love.keyboard.isDown("left") then objects.ball.body:applyForce(-400, 0) end
-		    if love.keyboard.isDown("up") then objects.ball.body:applyForce(0, -400) end
-		    if love.keyboard.isDown("down") then objects.ball.body:applyForce(0, 400) end    		
-	    	playing = false
-    	end
-    end
+--Manejo Colisiones
+function beginContact(a, b, coll)
+    x,y = coll:getNormal()
+	if a:getUserData() and b:getUserData() then
+		for i, ball in ipairs(objects.balls) do
+			if player_id == i then
+				ball.score = ball.score + 50
+			end
+		end
+		playing = true
+	end
 end
 
 --Draw
@@ -130,12 +204,28 @@ function GameState:draw()
 	end
 
 	if playing then
+		texto =  "Player "..tostring(player_id)
+		local scores = 0
 		love.graphics.setColor(255, 255, 255)
-		love.graphics.print("Player 1", 5, 5)
+		love.graphics.print(texto, 5, 5)
+		for i, ball in ipairs(objects.balls) do
+			if player_id == i then
+				scores = ball.score
+			end
+		end
+		love.graphics.printf(text..scores, 115, 5, 200, "right")
+		love.graphics.printf(timer, 60, 5, 200, "center")
 	end
 	--pelota
-	love.graphics.setColor(193, 47, 14)
-	love.graphics.circle("fill", objects.ball.body:getX(), objects.ball.body:getY(), objects.ball.shape:getRadius())
+	local a = 193
+	local b = 14
+	love.graphics.setColor(a, 47, b)
+	for i, ball in ipairs(objects.balls) do
+		love.graphics.circle("fill", ball.body:getX(), ball.body:getY(), ball.shape:getRadius())
+		a = a - 50
+		b = b * 2
+		love.graphics.setColor(a, 47, b)
+	end
 end
 
 --KeyPressed
