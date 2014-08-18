@@ -1,25 +1,20 @@
---Intentando hacer la cosa con LÖVE2d
--- por que no con pygame? se veia mas facil love, ademas es simple crear un ejecutable
--- tutorial fisicas = https://love2d.org/wiki/Tutorial:Physics
--- tutoriales love2d y lua http://gamedevelopment.tutsplus.com/articles/how-to-learn-love-love2d--gamedev-4331
+-- State Manager
+require("libs/stateManager")
+require("libs/lovelyMoon")
 
---love.window.setMode(320,240, {fullscreen = true})
-love.window.setMode(320,240)
-love.window.setTitle("JuegoSinNombre")
+-- Stages
+require("Stages/game")
 
-playing = true
-ballRadius = 5
-
---funcion para construir borde
-local function newBoundary( world, x, y, l, h )
-	local bound = {}
-	bound.body = love.physics.newBody(world, x, y, "static") -- crea cuerpo
-	bound.shape = love.physics.newRectangleShape(l,h) -- crea rectangulo
-	bound.fixture = love.physics.newFixture(bound.body, bound.shape) --asociando cuerpo y rectangulo
-
-	return bound
+function love.load()
+   --Add Gamestates Here
+   --addState(MenuState, "menu")
+   addState(GameState, "game")
+   
+   --Remember to Enable your Gamestates!
+   enableState("game")
 end
 
+<<<<<<< HEAD
 --funcion para construir pelota
 local function newBall(world, x, y)
 	local ball = {}
@@ -30,18 +25,17 @@ local function newBall(world, x, y)
 	ball.body:setLinearDamping(0.7)
 
 	return ball
+=======
+function love.update(dt)
+   lovelyMoon.update(dt)
+>>>>>>> origin/test_stages
 end
 
---funcion para construir obstaculo
-local function newObstacle( world, x, y )
-	local obs = {}
-	obs.body = love.physics.newBody(world, x, y, "static")
-	obs.shape = love.physics.newCircleShape(3)
-	obs.fixture = love.physics.newFixture(obs.body, obs.shape)
-
-	return obs
+function love.draw()
+   lovelyMoon.draw()
 end
 
+<<<<<<< HEAD
 function love.load()
 	love.physics.setMeter(32)
 	world = love.physics.newWorld(0, 0, true)
@@ -66,46 +60,21 @@ function love.load()
 	objects.ball = newBall(world, 320/2, 240/2)
 
 
+=======
+function love.keypressed(key, unicode)
+   lovelyMoon.keypressed(key, unicode)
+>>>>>>> origin/test_stages
 end
 
-function love.update(dt)
-	world:update(dt)
-
-
-    -- estado para determinar la direccion de la pelota
-    vx, vy = objects.ball.body:getLinearVelocity()
-    if  (vx < 0.08) and (vy < 0.08) then
-    	playing = true
-    end
-
-    if playing then
-    	if love.keyboard.isDown(" ") then
-			--eventos de teclado
-			if love.keyboard.isDown("right") then objects.ball.body:applyForce(400, 0) end
-		    if love.keyboard.isDown("left") then objects.ball.body:applyForce(-400, 0) end
-		    if love.keyboard.isDown("up") then objects.ball.body:applyForce(0, -400) end
-		    if love.keyboard.isDown("down") then objects.ball.body:applyForce(0, 400) end    		
-	    	playing = false
-    	end
-    end
-
+function love.keyreleased(key, unicode)
+   lovelyMoon.keyreleased(key, unicode)
 end
 
-function love.draw()
-	love.graphics.setBackgroundColor(104, 136, 248) --color de fondo
+function love.mousepressed(x, y, button)
+   lovelyMoon.mousepressed(x, y, button)
+end
 
-	--bordes
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.polygon("fill", objects.lbound.body:getWorldPoints(objects.lbound.shape:getPoints()))
-	love.graphics.polygon("fill", objects.rbound.body:getWorldPoints(objects.rbound.shape:getPoints()))
-	love.graphics.polygon("fill", objects.ubound.body:getWorldPoints(objects.ubound.shape:getPoints()))
-	love.graphics.polygon("fill", objects.dbound.body:getWorldPoints(objects.dbound.shape:getPoints()))
-
-	--obstaculos
-	for i, obstacle in ipairs(objects.obs) do
-		love.graphics.circle("fill", obstacle.body:getX(), obstacle.body:getY(), obstacle.shape:getRadius())
-	end
-
+<<<<<<< HEAD
 	love.graphics.setColor(255, 255, 255)
 	if playing then
 		love.graphics.print("Player 1", 10, 5)
@@ -115,4 +84,8 @@ function love.draw()
 	--pelota
 	love.graphics.setColor(193, 47, 14)
 	love.graphics.circle("fill", objects.ball.body:getX(), objects.ball.body:getY(), objects.ball.shape:getRadius())
+=======
+function love.mousereleased(x, y, button)
+   lovelyMoon.mousereleased(x, y, button)
+>>>>>>> origin/test_stages
 end
